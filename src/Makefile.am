@@ -7,7 +7,8 @@ hildondesktopconf_DATA = \
 hildon_status_menu_CFLAGS = \
 	$(HILDON_CFLAGS)							\
 	$(LIBHILDONDESKTOP_CFLAGS)						\
-	$(GNOME_VFS_CFLAGS)							\
+	$(GCONF_CFLAGS)								\
+	$(X11_CFLAGS)								\
 	-DHD_DESKTOP_CONFIG_PATH=\"$(hildondesktopconfdir)\"			\
 	$(MAEMO_LAUNCHER_CFLAGS)
 
@@ -29,5 +30,6 @@ hildon_status_menu_SOURCES = \
 hildon_status_menu_LDFLAGS = \
 	$(HILDON_LIBS)	    							\
 	$(LIBHILDONDESKTOP_LIBS)						\
-	$(GNOME_VFS_LIBS)							\
+	$(GCONF_LIBS)								\
+	$(X11_LIBS)								\
 	$(MAEMO_LAUNCHER_LIBS)

@@ -64,6 +64,22 @@ AC_SUBST(CFLAGS)
 # AM_GLIB_GNU_GETTEXT
 # AC_DEFINE(GETTEXT_PACKAGE, ["maemo-af-desktop"], [Package name for gettext])
 
+PKG_CHECK_MODULES(GCONF,
+                  [gconf-2.0],
+                  [AC_DEFINE(HAVE_GCONF, [], [Whether gconf-2 is present on the system])], 
+                  [PKG_CHECK_MODULES(GCONF, gconf-2.0)])
+
+AC_SUBST(GCONF_LIBS)
+AC_SUBST(GCONF_CFLAGS)
+
+PKG_CHECK_MODULES(X11,
+                  [x11],
+                  [AC_DEFINE(HAVE_GCONF, [], [Whether X11 is present on the system])], 
+                  [PKG_CHECK_MODULES(GCONF, x11)])
+
+AC_SUBST(X11_LIBS)
+AC_SUBST(X11_CFLAGS)
+
 PKG_CHECK_MODULES(HILDON,
                   [hildon-1], 
                   [AC_DEFINE(HAVE_LIBHILDON, [], [Whether libhildon-1 is present on the system])], 
@@ -79,10 +95,6 @@ PKG_CHECK_MODULES(LIBHILDONDESKTOP,
 
 AC_SUBST(LIBHILDONDESKTOP_LIBS)
 AC_SUBST(LIBHILDONDESKTOP_CFLAGS)
-
-PKG_CHECK_MODULES(GNOME_VFS, gnome-vfs-2.0 >= 2.8.3)
-AC_SUBST(GNOME_VFS_CFLAGS)
-AC_SUBST(GNOME_VFS_LIBS)
 
 #+++++++++++++++++++
 # Directories setup
