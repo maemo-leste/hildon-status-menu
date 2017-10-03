@@ -1,3 +1,9 @@
+hildon-status-menu (0.3.40-9) unstable; urgency=medium
+
+  * Enable git builds.
+
+ -- Ivan J. <parazyd@dyne.org>  Wed, 4 Oct 2017 01:05:00 +0200
+
 hildon-status-menu (0.3.40-8) unstable; urgency=low
 
   * Fixed a missing / that caused loading changes to fail.
