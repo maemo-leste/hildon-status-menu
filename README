@@ -1,10 +1,21 @@
-General Information
-===================
+The Status Menu application
+===========================
 
-The Status Menu application. For the Status Menu API see libhildondesktop.
+The hildon-status-menu process implements Status menu and Status area.
+The Status menu displays windows of dynamically loaded Gtk+ applets.
+All available Status menu applets are displayed in the menu, and some
+of them might have an icon in the Status area, depending on the
+configuration. Status menu applets can start new applications using the
+D-Bus autoactivation system, and they can display controls that the
+user can directly manipulate on their window. The Status area is
+basically a button that allows the user open the Status menu. Status
+area expands to accommodate its plugin icons (from selected Status menu
+plugins), but it has a pre-configured limit for the maximum number of
+plugin icons.
+
+For the Status Menu API see libhildondesktop.
 
 Requirements
 ============
-
 * libhildondesktop
 * hildon-widgets
