@@ -54,7 +54,7 @@ struct _HDStatusAreaBoxChild
   guint      priority;
 };
 
-G_DEFINE_TYPE (HDStatusAreaBox, hd_status_area_box, GTK_TYPE_CONTAINER);
+G_DEFINE_TYPE_WITH_CODE (HDStatusAreaBox, hd_status_area_box, GTK_TYPE_CONTAINER, G_ADD_PRIVATE(HDStatusAreaBox));
 
 static gint
 hd_status_area_box_cmp_priority (gconstpointer a,
@@ -330,8 +330,6 @@ hd_status_area_box_class_init (HDStatusAreaBoxClass *klass)
   widget_class->size_request = hd_status_area_box_size_request;
   widget_class->realize = hd_status_area_box_realize;
   widget_class->unrealize = hd_status_area_box_unrealize;
-
-  g_type_class_add_private (klass, sizeof (HDStatusAreaBoxPrivate));
 }
 
 static void
@@ -341,7 +339,7 @@ hd_status_area_box_init (HDStatusAreaBox *box)
   gtk_widget_set_redraw_on_allocate (GTK_WIDGET (box),
                                      FALSE);
 
-  box->priv = G_TYPE_INSTANCE_GET_PRIVATE ((box), HD_TYPE_STATUS_AREA_BOX, HDStatusAreaBoxPrivate);
+  box->priv = (HDStatusAreaBoxPrivate*)hd_status_area_box_get_instance_private(box);
 
   box->priv->children = NULL;
 

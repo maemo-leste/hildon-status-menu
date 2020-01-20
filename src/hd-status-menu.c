@@ -91,9 +91,7 @@ struct _HDStatusMenuPrivate
   gboolean         portrait;
 };
 
-#define HD_STATUS_MENU_GET_PRIVATE(obj) (G_TYPE_INSTANCE_GET_PRIVATE ((obj), HD_TYPE_STATUS_MENU, HDStatusMenuPrivate));
-
-G_DEFINE_TYPE (HDStatusMenu, hd_status_menu, GTK_TYPE_WINDOW);
+G_DEFINE_TYPE_WITH_CODE (HDStatusMenu, hd_status_menu, GTK_TYPE_WINDOW, G_ADD_PRIVATE(HDStatusMenu));
 
 static void
 notify_visible_items_cb (HDStatusMenu *status_menu)
@@ -163,7 +161,7 @@ hd_status_menu_on_gconf_value_changed (GConfClient *client G_GNUC_UNUSED,
                                        GConfEntry *entry  G_GNUC_UNUSED,
                                        HDStatusMenu *status_menu)
 {
-  HDStatusMenuPrivate *priv = HD_STATUS_MENU_GET_PRIVATE (status_menu);
+  HDStatusMenuPrivate *priv = (HDStatusMenuPrivate*)hd_status_menu_get_instance_private(status_menu);
   guint visible_items;
   int rows = NUMBER_OF_ROWS;
   int rows_portrait = NUMBER_OF_ROWS_PORTRAIT;
@@ -211,7 +209,7 @@ hd_status_menu_init (HDStatusMenu *status_menu)
 {
   DBusConnection *sysbus;
   DBusError derror;
-  HDStatusMenuPrivate *priv = HD_STATUS_MENU_GET_PRIVATE (status_menu);
+  HDStatusMenuPrivate *priv = (HDStatusMenuPrivate*)hd_status_menu_get_instance_private(status_menu);
   GtkWidget *alignment; /* Used to center the pannable */
 
   /* Set priv member */
@@ -592,8 +590,6 @@ hd_status_menu_class_init (HDStatusMenuClass *klass)
                                                         "The plugin manager which should be used",
                                                         HD_TYPE_PLUGIN_MANAGER,
                                                         G_PARAM_WRITABLE | G_PARAM_CONSTRUCT_ONLY));
-
-  g_type_class_add_private (klass, sizeof (HDStatusMenuPrivate));
 }
 
 /**

@@ -33,9 +33,6 @@
 
 #include "hd-display.h"
 
-#define HD_DISPLAY_GET_PRIVATE(object) \
-  (G_TYPE_INSTANCE_GET_PRIVATE ((object), HD_TYPE_DISPLAY, HDDisplayPrivate))
-
 struct _HDDisplayPrivate
 {
   DBusConnection *system_bus;
@@ -59,7 +56,7 @@ static DBusHandlerResult system_bus_signal_filter (DBusConnection *system_bus,
                                                    DBusMessage    *msg,
                                                    void           *data);
 
-G_DEFINE_TYPE (HDDisplay, hd_display, G_TYPE_OBJECT);
+G_DEFINE_TYPE_WITH_CODE (HDDisplay, hd_display, G_TYPE_OBJECT, G_ADD_PRIVATE(HDDisplay));
 
 HDDisplay *
 hd_display_get (void)
@@ -94,13 +91,12 @@ hd_display_class_init (HDDisplayClass *klass)
                                                           G_TYPE_NONE,
                                                           0);
 
-  g_type_class_add_private (klass, sizeof (HDDisplayPrivate));
 }
 
 static void
 hd_display_init (HDDisplay *display)
 {
-  display->priv = HD_DISPLAY_GET_PRIVATE (display);
+  display->priv = (HDDisplayPrivate*)hd_display_get_instance_private(display);
 
   display->priv->display_on = TRUE;
 

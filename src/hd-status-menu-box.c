@@ -52,7 +52,7 @@ enum
   PROP_COLUMNS
 };
  
-G_DEFINE_TYPE (HDStatusMenuBox, hd_status_menu_box, GTK_TYPE_CONTAINER);
+G_DEFINE_TYPE_WITH_CODE (HDStatusMenuBox, hd_status_menu_box, GTK_TYPE_CONTAINER, G_ADD_PRIVATE(HDStatusMenuBox));
 
 static void
 hd_status_menu_box_get_property (GObject      *object,
@@ -319,8 +319,6 @@ hd_status_menu_box_class_init (HDStatusMenuBoxClass *klass)
                                                       G_MAXUINT,
                                                       2,
                                                       G_PARAM_READABLE | G_PARAM_WRITABLE | G_PARAM_CONSTRUCT));
-
-  g_type_class_add_private (klass, sizeof (HDStatusMenuBoxPrivate));
 }
 
 static void

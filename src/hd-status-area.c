@@ -52,8 +52,6 @@
 
 /* Configuration file keys */
 
-#define HD_STATUS_AREA_GET_PRIVATE(obj) (G_TYPE_INSTANCE_GET_PRIVATE ((obj), HD_TYPE_STATUS_AREA, HDStatusAreaPrivate));
-
 static GQuark      quark_hd_status_area_image = 0;
 static const gchar hd_status_area_image[] = "hd_status_area_image";
 
@@ -88,7 +86,7 @@ struct _HDStatusAreaPrivate
   gboolean status_area_visible;
 };
 
-G_DEFINE_TYPE (HDStatusArea, hd_status_area, GTK_TYPE_WINDOW);
+G_DEFINE_TYPE_WITH_CODE (HDStatusArea, hd_status_area, GTK_TYPE_WINDOW, G_ADD_PRIVATE(HDStatusArea));
 
 static gboolean
 button_release_event_cb (GtkWidget      *widget,
@@ -165,7 +163,7 @@ configure_event_cb (GtkWidget         *widget,
 static void
 hd_status_area_init (HDStatusArea *status_area)
 {
-  HDStatusAreaPrivate *priv = HD_STATUS_AREA_GET_PRIVATE (status_area);
+  HDStatusAreaPrivate *priv = (HDStatusAreaPrivate*)hd_status_area_get_instance_private(status_area);
   GtkWidget *left_alignment, *main_hbox, *left_hbox, *special_hbox;
   guint i;
 
@@ -759,8 +757,6 @@ hd_status_area_class_init (HDStatusAreaClass *klass)
                                                         "The plugin manager which should be used",
                                                         HD_TYPE_PLUGIN_MANAGER,
                                                         G_PARAM_WRITABLE | G_PARAM_CONSTRUCT_ONLY));
-
-  g_type_class_add_private (klass, sizeof (HDStatusAreaPrivate));
 }
 
 GtkWidget *

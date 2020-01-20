@@ -28,9 +28,6 @@
 
 #include "hd-desktop.h"
 
-#define HD_DESKTOP_GET_PRIVATE(object) \
-  (G_TYPE_INSTANCE_GET_PRIVATE ((object), HD_TYPE_DESKTOP, HDDesktopPrivate))
-
 struct _HDDesktopPrivate
 {
   GdkWindow *root_window;
@@ -55,7 +52,7 @@ static GdkFilterReturn filter_property_changed (GdkXEvent *xevent,
                                                 GdkEvent  *event,
                                                 gpointer   data);
 
-G_DEFINE_TYPE (HDDesktop, hd_desktop, G_TYPE_OBJECT);
+G_DEFINE_TYPE_WITH_CODE (HDDesktop, hd_desktop, G_TYPE_OBJECT, G_ADD_PRIVATE(HDDesktop));
 
 HDDesktop *
 hd_desktop_get (void)
@@ -96,14 +93,12 @@ hd_desktop_class_init (HDDesktopClass *klass)
                                                       g_cclosure_marshal_VOID__VOID,
                                                       G_TYPE_NONE,
                                                       0);
-
-  g_type_class_add_private (klass, sizeof (HDDesktopPrivate));
 }
 
 static void
 hd_desktop_init (HDDesktop *desktop)
 {
-  desktop->priv = HD_DESKTOP_GET_PRIVATE (desktop);
+  desktop->priv = (HDDesktopPrivate*)hd_desktop_get_instance_private(desktop);
 
   initialize_root_window (desktop);
 }
