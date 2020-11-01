@@ -1,3 +1,9 @@
+hildon-status-menu (0.3.42-1) unstable; urgency=medium
+
+  * Make sure libtool does not interfere with maemo-launcher linker flags
+
+ -- Ivaylo Dimitrov <ivo.g.dimitrov.75@gmail.com>  Sun, 01 Nov 2020 13:10:22 +0200
+
 hildon-status-menu (0.3.41-1) unstable; urgency=medium
 
   * Port to newer gtk2 interface
