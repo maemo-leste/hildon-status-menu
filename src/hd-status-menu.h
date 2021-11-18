@@ -27,6 +27,8 @@
 #include <gtk/gtk.h>
 #include <libhildondesktop/libhildondesktop.h>
 
+#include "sn-backend.h"
+
 G_BEGIN_DECLS
 
 #define HD_TYPE_STATUS_MENU             (hd_status_menu_get_type ())
@@ -58,7 +60,7 @@ struct _HDStatusMenuClass
 
 GType      hd_status_menu_get_type (void) G_GNUC_CONST;
 
-GtkWidget *hd_status_menu_new      (HDPluginManager *plugin_manager);
+GtkWidget *hd_status_menu_new      (HDPluginManager *plugin_manager, SnBackend *sn_backend);
 
 G_END_DECLS
 

@@ -55,6 +55,18 @@ fi
 
 AC_SUBST(CFLAGS)
 
+#++++++++++++++++++++++++
+# Check fo gdbus-codegen
+#++++++++++++++++++++++++
+
+AC_ARG_VAR([GDBUS_CODEGEN], [D-Bus code and documentation generator from XML D-Bus interface definitions])
+AC_PATH_PROG([GDBUS_CODEGEN], [gdbus-codegen], [no])
+if test x"$GDBUS_CODEGEN" = x"no"; then
+  AC_MSG_ERROR([could not find gdbus-codegen in \$PATH. You can run
+  ./configure GDBUS_CODEGEN=/path/to/gdbus-codegen to define
+  a custom location for it.])
+fi
+
 #++++++++++++
 # i18n setup 
 #++++++++++++
@@ -95,6 +107,22 @@ PKG_CHECK_MODULES(LIBHILDONDESKTOP,
 
 AC_SUBST(LIBHILDONDESKTOP_LIBS)
 AC_SUBST(LIBHILDONDESKTOP_CFLAGS)
+
+PKG_CHECK_MODULES(GIO,
+                  [gio-2.0],
+                  [AC_DEFINE(HAVE_GIO, [], [Whether gio-2.0 is present on the system])], 
+                  [])
+
+AC_SUBST(GIO_LIBS)
+AC_SUBST(GIO_CFLAGS)
+
+PKG_CHECK_MODULES(GIO_UNIX,
+                  [gio-unix-2.0],
+                  [AC_DEFINE(HAVE_GIO_UNIX, [], [Whether gio-unix-2.0 is present on the system])], 
+                  [])
+
+AC_SUBST(GIO_UNIX_LIBS)
+AC_SUBST(GIO_UNIX_CFLAGS)
 
 #+++++++++++++++++++
 # Directories setup
