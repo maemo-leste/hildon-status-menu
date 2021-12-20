@@ -40,6 +40,9 @@
 
 #include "hd-status-area.h"
 
+#include "sn-backend.h"
+#include "sn-item.h"
+
 /* UI Style guide */
 #define STATUS_AREA_HEIGHT 56
 #define MINIMUM_STATUS_AREA_WIDTH 112
@@ -61,12 +64,15 @@ static const gchar hd_status_area_plugin_id[] = "hd_status_area_plugin_id";
 enum
 {
   PROP_0,
-  PROP_PLUGIN_MANAGER
+  PROP_PLUGIN_MANAGER,
+  PROP_SN_BACKEND
 };
 
 struct _HDStatusAreaPrivate
 {
   HDPluginManager *plugin_manager;
+  
+  SnBackend  *sn_backend;
 
   HDDesktop *desktop;
   HDDisplay *display;
@@ -254,7 +260,7 @@ hd_status_area_constructor (GType                  type,
 
   /* Create Status Menu */
   priv = HD_STATUS_AREA (object)->priv;
-  priv->status_menu = hd_status_menu_new (priv->plugin_manager);
+  priv->status_menu = hd_status_menu_new (priv->plugin_manager, priv->sn_backend);
 
   return object;
 }
@@ -537,6 +543,16 @@ hd_status_area_set_property (GObject      *object,
       else
         g_warning ("plugin-manager should not be NULL");
       break;
+      
+      case PROP_SN_BACKEND:
+      /* The property is CONSTRUCT_ONLY so there is no value yet */
+      priv->sn_backend = g_value_dup_object (value);
+      if (priv->plugin_manager != NULL)
+        {
+        }
+      else
+        g_warning ("sn-backend should not be NULL");
+      break;
 
     default:
       G_OBJECT_WARN_INVALID_PROPERTY_ID (object, prop_id, pspec);
@@ -757,10 +773,17 @@ hd_status_area_class_init (HDStatusAreaClass *klass)
                                                         "The plugin manager which should be used",
                                                         HD_TYPE_PLUGIN_MANAGER,
                                                         G_PARAM_WRITABLE | G_PARAM_CONSTRUCT_ONLY));
+  g_object_class_install_property (object_class,
+                                   PROP_SN_BACKEND,
+                                   g_param_spec_object ("sn-backend",
+                                                        "StatusNotifierItem Backend",
+                                                        "The StatusNotifierItem backend which should be used",
+                                                        TYPE_SN_BACKEND,
+                                                        G_PARAM_WRITABLE | G_PARAM_CONSTRUCT_ONLY));
 }
 
 GtkWidget *
-hd_status_area_new (HDPluginManager *plugin_manager)
+hd_status_area_new (HDPluginManager *plugin_manager, SnBackend *sn_backend)
 {
   GtkWidget *status_area;
 
@@ -768,6 +791,7 @@ hd_status_area_new (HDPluginManager *plugin_manager)
                               "type", GTK_WINDOW_TOPLEVEL,
                               "accept-focus", FALSE,
                               "plugin-manager", plugin_manager,
+                              "sn-backend", sn_backend,
                               NULL);
 
   return status_area;

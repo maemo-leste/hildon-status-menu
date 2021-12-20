@@ -41,6 +41,9 @@
 #include "hd-status-menu.h"
 #include "hd-status-menu-box.h"
 #include "hd-status-menu-config.h"
+#include "sn-backend.h"
+#include "sn-item.h"
+#include "systray-applet.h"
 
 /**
  * SECTION:hdstatusmenu
@@ -74,7 +77,8 @@
 enum
 {
   PROP_0,
-  PROP_PLUGIN_MANAGER
+  PROP_PLUGIN_MANAGER,
+  PROP_SN_BACKEND
 };
 
 struct _HDStatusMenuPrivate
@@ -83,6 +87,10 @@ struct _HDStatusMenuPrivate
   GtkWidget       *pannable;
 
   HDPluginManager *plugin_manager;
+  
+  SnBackend  *sn_backend;
+  
+  GSList *sn_applet_list;
 
   GConfClient     *gconf_client;
 
@@ -245,6 +253,8 @@ hd_status_menu_init (HDStatusMenu *status_menu)
   gconf_client_notify_add (priv->gconf_client, NUMBER_OF_ROWS_PORTRAIT_GCONF_KEY,
                            (gpointer) hd_status_menu_on_gconf_value_changed,
                            status_menu, NULL, NULL);
+  
+  priv->sn_applet_list = NULL;
 
   /* Create widgets */
   priv->box = hd_status_menu_box_new ();
@@ -356,6 +366,32 @@ hd_status_menu_plugin_removed_cb (HDPluginManager *plugin_manager,
 }
 
 static void
+hd_status_menu_item_added_cb (HDStatusMenu *status_menu, SnItem *item)
+{
+  HDStatusMenuPrivate *priv = status_menu->priv;
+  g_assert(IS_SN_ITEM(item));
+  SystrayApplet *applet = systray_applet_new(item);
+  priv->sn_applet_list = g_slist_prepend(priv->sn_applet_list, applet);
+  hd_status_menu_box_pack (HD_STATUS_MENU_BOX(priv->box), GTK_WIDGET(applet), G_MAXUINT);
+}
+
+static void
+hd_status_menu_item_removed_cb (HDStatusMenu *status_menu, SnItem *item)
+{
+  HDStatusMenuPrivate *priv = status_menu->priv;
+  for(GSList *element = priv->sn_applet_list; element; element = element->next)
+  {
+    SystrayApplet *applet = element->data;
+    if(systray_applet_is_item(applet, item)) {
+      g_object_unref(applet);
+      priv->sn_applet_list = g_slist_remove(priv->sn_applet_list, applet);
+      gtk_container_remove (GTK_CONTAINER (priv->box), GTK_WIDGET(applet));
+      break;
+    }
+  }
+}
+
+static void
 update_position (GtkWidget *child,
                  GKeyFile  *keyfile)
 {
@@ -419,6 +455,20 @@ hd_status_menu_set_property (GObject      *object,
         }
       else
         g_warning ("plugin-manager should not be NULL");
+      break;
+      
+      case PROP_SN_BACKEND:
+      /* The property is CONSTRUCT_ONLY so there is no value yet */
+      priv->sn_backend = g_value_dup_object (value);
+      if (priv->sn_backend != NULL)
+        {
+          g_signal_connect_swapped (priv->sn_backend, "item-added",
+                            G_CALLBACK (hd_status_menu_item_added_cb), object);
+          g_signal_connect_swapped (priv->sn_backend, "item-removed",
+                            G_CALLBACK (hd_status_menu_item_removed_cb), object);
+        }
+      else
+        g_warning ("sn-backend should not be NULL");
       break;
 
     default:
@@ -590,6 +640,13 @@ hd_status_menu_class_init (HDStatusMenuClass *klass)
                                                         "The plugin manager which should be used",
                                                         HD_TYPE_PLUGIN_MANAGER,
                                                         G_PARAM_WRITABLE | G_PARAM_CONSTRUCT_ONLY));
+  g_object_class_install_property (object_class,
+                                   PROP_SN_BACKEND,
+                                   g_param_spec_object ("sn-backend",
+                                                        "StatusNotifierItem Backend",
+                                                        "The StatusNotifierItem backend which should be used",
+                                                        TYPE_SN_BACKEND,
+                                                        G_PARAM_WRITABLE | G_PARAM_CONSTRUCT_ONLY));
 }
 
 /**
@@ -601,7 +658,7 @@ hd_status_menu_class_init (HDStatusMenuClass *klass)
  * Returns: a new #HDStatusMenu.
  **/
 GtkWidget *
-hd_status_menu_new (HDPluginManager *plugin_manager)
+hd_status_menu_new (HDPluginManager *plugin_manager, SnBackend *sn_backend)
 {
   GtkWidget *status_menu;
 
@@ -609,6 +666,7 @@ hd_status_menu_new (HDPluginManager *plugin_manager)
                               "type", GTK_WINDOW_TOPLEVEL,
                               "accept-focus", FALSE,
                               "plugin-manager", plugin_manager,
+                              "sn-backend", sn_backend,
                               NULL);
 
   return status_menu;

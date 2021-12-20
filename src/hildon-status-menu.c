@@ -40,6 +40,7 @@
 #include "hd-status-area.h"
 #include "hd-status-menu.h"
 #include "hd-status-menu-config.h"
+#include "sn-backend.h"
 
 #define HD_STAMP_DIR   "/tmp/hildon-desktop/"
 #define HD_STATUS_MENU_STAMP_FILE HD_STAMP_DIR "status-menu.stamp"
@@ -111,6 +112,7 @@ main (int argc, char **argv)
 {
   GtkWidget *status_area;
   HDPluginManager *plugin_manager;
+  SnBackend *sn_backend;
 #if !GLIB_CHECK_VERSION(2,32,0)
   if (!g_thread_supported ())
     g_thread_init (NULL);
@@ -137,6 +139,8 @@ main (int argc, char **argv)
   plugin_manager = hd_plugin_manager_new (
                      hd_config_file_new_with_defaults ("status-menu.conf"));
 
+  sn_backend = sn_backend_new();
+
   /* Set the load priority function */
   hd_plugin_manager_set_load_priority_func (plugin_manager,
                                             load_priority_func,
@@ -145,8 +149,10 @@ main (int argc, char **argv)
 
   /* Create simple window to show the Status Menu 
    */
-  status_area = hd_status_area_new (plugin_manager);
+  status_area = hd_status_area_new (plugin_manager, sn_backend);
 
+  sn_backend_start(sn_backend);
+ 
   /* Show Status Area */
   gtk_widget_show (status_area);
 
