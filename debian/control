@@ -1,20 +1,14 @@
 Source: hildon-status-menu
 Section: x11
 Priority: optional
-Maintainer: Kimmo Hämäläinen <kimmo.hamalainen@nokia.com>
-Build-Depends: debhelper (>= 5), cdbs, pkg-config, libhildon1-dev (>= 2.1.4), libdbus-1-dev (>= 1.0.2), libhildondesktop1-dev (>= 2.1.6), maemo-system-services-dev, maemo-launcher-dev (>= 0.23-1), mce-dev, autoconf, automake, libtool-bin, libdbus-glib-1-dev
-Standards-Version: 3.8.0
+Maintainer: Ivaylo Dimitrov <ivo.g.dimitrov.75@gmail.com>
+Build-Depends: debhelper-compat (= 13), pkg-config, libhildon1-dev (>= 2.1.4), libdbus-1-dev (>= 1.0.2), libhildondesktop1-dev (>= 2.1.6), maemo-system-services-dev, maemo-launcher-dev (>= 0.23-1), mce-dev, autoconf, automake, libtool-bin, libdbus-glib-1-dev
+Standards-Version: 4.5.1
+Vcs-Git: https://github.com/maemo-leste/hildon-status-menu.git
+Vcs-Browser: https://github.com/maemo-leste/hildon-status-menu
 
 Package: hildon-status-menu
 Section: x11
 Architecture: any
 Depends: ${shlibs:Depends}, ${misc:Depends}, ${launcher:Depends}
 Description: Hildon Status Menu application
-
-Package: hildon-status-menu-dbg
-Section: devel
-Architecture: any
-Priority: extra
-Depends: hildon-status-menu (= ${source:Version})
-Description: Debug symbols for Hildon Status Menu application
-
