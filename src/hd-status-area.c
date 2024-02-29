@@ -299,10 +299,14 @@ hd_status_area_finalize (GObject *object)
 }
 
 static void
-status_area_icon_changed (HDStatusPluginItem *plugin)
+status_area_icon_changed (HDStatusPluginItem *plugin,
+                          const GParamSpec   *pspec,
+                          HDStatusArea       *status_area)
 {
+  HDStatusAreaPrivate *priv = status_area->priv;
   GtkWidget *image;
   GdkPixbuf *pixbuf;
+  int i;
 
   /* Get the image connected with the plugin */
   image = g_object_get_qdata (G_OBJECT (plugin),
@@ -312,6 +316,21 @@ status_area_icon_changed (HDStatusPluginItem *plugin)
   g_object_get (G_OBJECT (plugin),
                 "status-area-icon", &pixbuf,
                 NULL);
+
+
+  for (i = 0; i < HD_STATUS_AREA_NUM_SPECIAL_ITEMS; i++)
+    {
+      if (image == priv->special_item_image[i])
+        {
+          int width = pixbuf ? gdk_pixbuf_get_width (pixbuf) :
+                               SPECIAL_ICON_WIDTH;
+
+          g_return_if_fail(width >= SPECIAL_ICON_WIDTH);
+
+          gtk_widget_set_size_request (image, width, SPECIAL_ICON_HEIGHT);
+        }
+    }
+
   gtk_image_set_from_pixbuf (GTK_IMAGE (image), pixbuf);
 
   /*
@@ -324,7 +343,6 @@ status_area_icon_changed (HDStatusPluginItem *plugin)
   if (pixbuf)
     {
       g_object_unref (pixbuf);
-
       gtk_widget_show (image);
     }
   else
@@ -427,8 +445,8 @@ hd_status_area_plugin_added_cb (HDPluginManager *plugin_manager,
   g_object_set (plugin, "status-area-visible", priv->status_area_visible, NULL);
 
   g_signal_connect (plugin, "notify::status-area-icon",
-                    G_CALLBACK (status_area_icon_changed), NULL);
-  status_area_icon_changed (HD_STATUS_PLUGIN_ITEM (plugin));
+                    G_CALLBACK (status_area_icon_changed), status_area);
+  status_area_icon_changed (HD_STATUS_PLUGIN_ITEM (plugin), NULL, status_area);
 
   g_free (plugin_id);
 }
