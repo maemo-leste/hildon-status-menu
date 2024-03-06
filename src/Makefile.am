@@ -27,9 +27,10 @@ hildon_status_menu_SOURCES = \
 	hd-display.c								\
 	hd-display.h
 
-hildon_status_menu_LDFLAGS = \
+hildon_status_menu_LDADD = \
 	$(HILDON_LIBS)	    							\
 	$(LIBHILDONDESKTOP_LIBS)						\
 	$(GCONF_LIBS)								\
 	$(X11_LIBS)								\
 	$(MAEMO_LAUNCHER_LIBS)
+hildon_status_menu_LDFLAGS = -Wl,--as-needed

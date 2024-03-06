@@ -1,6 +1,6 @@
 #!/usr/bin/make -f
-include /usr/share/cdbs/1/rules/debhelper.mk
-include /usr/share/cdbs/1/class/autotools.mk
+
+#export DH_VERBOSE=1
 
 ifeq (,$(findstring nolauncher,$(DEB_BUILD_OPTIONS)))
 DEB_CONFIGURE_EXTRA_FLAGS = --enable-maemo-launcher
@@ -8,9 +8,21 @@ endif
 
 DEB_DH_INSTALLCHANGELOGS_ARGS=--no-act
 
-makebuilddir::
-	AUTOGEN_SUBDIR_MODE=1 NOCONFIGURE=yes ./autogen.sh
+CFLAGS += -Werror
 
-binary-install/hildon-status-menu::
+%:
+	dh $@ --with autoreconf
+
+override_dh_autoreconf:
+	dh_autoreconf --as-needed
+
+override_dh_auto_configure:
+	dh_auto_configure -- $(DEB_CONFIGURE_EXTRA_FLAGS)
+
+override_dh_auto_install:
+	dh_auto_install --destdir=debian/tmp
+
+override_dh_install:
+	dh_install
 	dh_installxsession -u 'post 15'
 	dh_maemolauncher

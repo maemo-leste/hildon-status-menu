@@ -43,8 +43,6 @@ typedef struct _HDStatusAreaPrivate HDStatusAreaPrivate;
 struct _HDStatusArea
 {
   GtkWindow parent_instance;
-
-  HDStatusAreaPrivate *priv;
 };
 
 struct _HDStatusAreaClass

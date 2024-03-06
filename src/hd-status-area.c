@@ -86,14 +86,16 @@ struct _HDStatusAreaPrivate
   gboolean status_area_visible;
 };
 
-G_DEFINE_TYPE_WITH_CODE (HDStatusArea, hd_status_area, GTK_TYPE_WINDOW, G_ADD_PRIVATE(HDStatusArea));
+G_DEFINE_TYPE_WITH_PRIVATE (HDStatusArea, hd_status_area, GTK_TYPE_WINDOW);
+#define HD_STATUS_AREA_PRIVATE(o) \
+  ((HDStatusAreaPrivate *)hd_status_area_get_instance_private ((HDStatusArea *)(o)))
 
 static gboolean
 button_release_event_cb (GtkWidget      *widget,
                        GdkEventButton *event,
                        HDStatusArea   *status_area)
 {
-  HDStatusAreaPrivate *priv = status_area->priv;
+  HDStatusAreaPrivate *priv = HD_STATUS_AREA_PRIVATE (status_area);
 
   gtk_widget_show (priv->status_menu);
   if (!GTK_WIDGET_VISIBLE (priv->status_menu))
@@ -126,7 +128,7 @@ is_widget_on_screen (GtkWidget *widget)
 static void
 update_status_area_visibility (HDStatusArea *status_area)
 {
-  HDStatusAreaPrivate *priv = status_area->priv;
+  HDStatusAreaPrivate *priv = HD_STATUS_AREA_PRIVATE (status_area);
   gboolean visible;
   GList *l;
 
@@ -163,12 +165,9 @@ configure_event_cb (GtkWidget         *widget,
 static void
 hd_status_area_init (HDStatusArea *status_area)
 {
-  HDStatusAreaPrivate *priv = (HDStatusAreaPrivate*)hd_status_area_get_instance_private(status_area);
+  HDStatusAreaPrivate *priv = HD_STATUS_AREA_PRIVATE (status_area);
   GtkWidget *left_alignment, *main_hbox, *left_hbox, *special_hbox;
   guint i;
-
-  /* Set priv member */
-  status_area->priv = priv;
 
   priv->desktop = hd_desktop_get ();
   g_signal_connect_swapped (priv->desktop, "task-switcher-show",
@@ -253,7 +252,7 @@ hd_status_area_constructor (GType                  type,
                                                                       construct_properties);
 
   /* Create Status Menu */
-  priv = HD_STATUS_AREA (object)->priv;
+  priv = HD_STATUS_AREA_PRIVATE (object);
   priv->status_menu = hd_status_menu_new (priv->plugin_manager);
 
   return object;
@@ -263,7 +262,7 @@ static void
 hd_status_area_dispose (GObject *object)
 {
   HDStatusArea *status_area = HD_STATUS_AREA (object);
-  HDStatusAreaPrivate *priv = status_area->priv;
+  HDStatusAreaPrivate *priv = HD_STATUS_AREA_PRIVATE (status_area);
 
   if (priv->plugin_manager)
     priv->plugin_manager = (g_object_unref (priv->plugin_manager), NULL);
@@ -290,7 +289,7 @@ hd_status_area_dispose (GObject *object)
 static void
 hd_status_area_finalize (GObject *object)
 {
-  HDStatusAreaPrivate *priv = HD_STATUS_AREA (object)->priv;
+  HDStatusAreaPrivate *priv = HD_STATUS_AREA_PRIVATE (object);
 
   if (priv->special_item_image)
     priv->special_item_image = (g_free (priv->special_item_image), NULL);
@@ -299,10 +298,14 @@ hd_status_area_finalize (GObject *object)
 }
 
 static void
-status_area_icon_changed (HDStatusPluginItem *plugin)
+status_area_icon_changed (HDStatusPluginItem *plugin,
+                          const GParamSpec   *pspec,
+                          HDStatusArea       *status_area)
 {
+  HDStatusAreaPrivate *priv = HD_STATUS_AREA_PRIVATE (status_area);
   GtkWidget *image;
   GdkPixbuf *pixbuf;
+  int i;
 
   /* Get the image connected with the plugin */
   image = g_object_get_qdata (G_OBJECT (plugin),
@@ -312,6 +315,21 @@ status_area_icon_changed (HDStatusPluginItem *plugin)
   g_object_get (G_OBJECT (plugin),
                 "status-area-icon", &pixbuf,
                 NULL);
+
+
+  for (i = 0; i < HD_STATUS_AREA_NUM_SPECIAL_ITEMS; i++)
+    {
+      if (image == priv->special_item_image[i])
+        {
+          int width = pixbuf ? gdk_pixbuf_get_width (pixbuf) :
+                               SPECIAL_ICON_WIDTH;
+
+          g_return_if_fail(width >= SPECIAL_ICON_WIDTH);
+
+          gtk_widget_set_size_request (image, width, SPECIAL_ICON_HEIGHT);
+        }
+    }
+
   gtk_image_set_from_pixbuf (GTK_IMAGE (image), pixbuf);
 
   /*
@@ -324,7 +342,6 @@ status_area_icon_changed (HDStatusPluginItem *plugin)
   if (pixbuf)
     {
       g_object_unref (pixbuf);
-
       gtk_widget_show (image);
     }
   else
@@ -336,7 +353,7 @@ hd_status_area_plugin_added_cb (HDPluginManager *plugin_manager,
                                 GObject         *plugin,
                                 HDStatusArea    *status_area)
 {
-  HDStatusAreaPrivate *priv = status_area->priv;
+  HDStatusAreaPrivate *priv = HD_STATUS_AREA_PRIVATE (status_area);
   gchar *plugin_id;
   GtkWidget *image = NULL;
   GKeyFile *keyfile;
@@ -427,8 +444,8 @@ hd_status_area_plugin_added_cb (HDPluginManager *plugin_manager,
   g_object_set (plugin, "status-area-visible", priv->status_area_visible, NULL);
 
   g_signal_connect (plugin, "notify::status-area-icon",
-                    G_CALLBACK (status_area_icon_changed), NULL);
-  status_area_icon_changed (HD_STATUS_PLUGIN_ITEM (plugin));
+                    G_CALLBACK (status_area_icon_changed), status_area);
+  status_area_icon_changed (HD_STATUS_PLUGIN_ITEM (plugin), NULL, status_area);
 
   g_free (plugin_id);
 }
@@ -446,7 +463,7 @@ hd_status_area_plugin_removed_cb (HDPluginManager *plugin_manager,
                                   GObject         *plugin,
                                   HDStatusArea    *status_area)
 {
-  HDStatusAreaPrivate *priv = status_area->priv;
+  HDStatusAreaPrivate *priv = HD_STATUS_AREA_PRIVATE (status_area);
 
   /* Plugin must be a HDStatusMenuItem */
   if (!HD_IS_STATUS_PLUGIN_ITEM (plugin))
@@ -507,7 +524,7 @@ hd_status_area_items_configuration_loaded_cb (HDPluginManager *plugin_manager,
                                                GKeyFile        *key_file,
                                                HDStatusArea    *status_area)
 {
-  HDStatusAreaPrivate *priv = status_area->priv;
+  HDStatusAreaPrivate *priv = HD_STATUS_AREA_PRIVATE (status_area);
 
   gtk_container_foreach (GTK_CONTAINER (priv->icon_box), (GtkCallback) update_position, key_file);
 }
@@ -518,7 +535,7 @@ hd_status_area_set_property (GObject      *object,
                              const GValue *value,
                              GParamSpec   *pspec)
 {
-  HDStatusAreaPrivate *priv = HD_STATUS_AREA (object)->priv;
+  HDStatusAreaPrivate *priv = HD_STATUS_AREA_PRIVATE (object);
 
   switch (prop_id)
     {
@@ -578,7 +595,7 @@ is_portrait_mode (GtkWidget *widget)
 static void
 update_alignemnt_padding (HDStatusArea *status_area)
 {
-  HDStatusAreaPrivate *priv = status_area->priv;
+  HDStatusAreaPrivate *priv = HD_STATUS_AREA_PRIVATE (status_area);
   gboolean portrait = is_portrait_mode (GTK_WIDGET (status_area));
   guint left_right_padding;
 
@@ -659,7 +676,7 @@ hd_status_area_unrealize (GtkWidget *widget)
 static void
 hd_status_area_map (GtkWidget *widget)
 {
-  HDStatusAreaPrivate *priv = HD_STATUS_AREA (widget)->priv;
+  HDStatusAreaPrivate *priv = HD_STATUS_AREA_PRIVATE (widget);
 
   priv->resize_after_map = TRUE;
 
@@ -669,7 +686,7 @@ hd_status_area_map (GtkWidget *widget)
 static void
 hd_status_area_check_resize (GtkContainer *container)
 {
-  HDStatusAreaPrivate *priv = HD_STATUS_AREA (container)->priv;
+  HDStatusAreaPrivate *priv = HD_STATUS_AREA_PRIVATE (container);
   GtkWindow *window = GTK_WINDOW (container);
   GtkWidget *widget = GTK_WIDGET (container);
 
