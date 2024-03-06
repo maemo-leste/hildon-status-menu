@@ -1,3 +1,9 @@
+hildon-status-menu (0.3.43-1) unstable; urgency=medium
+
+  * allow status area special icons to be wider than 18 px
+
+ -- Ivaylo Dimitrov <ivo.g.dimitrov.75@gmail.com>  Wed, 06 Mart 2024 19:02:32 +0200
+
 hildon-status-menu (0.3.42-1) unstable; urgency=medium
 
   * Make sure libtool does not interfere with maemo-launcher linker flags
